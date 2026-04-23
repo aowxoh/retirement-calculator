@@ -1,0 +1,1235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Retirement Blueprint Calculator — Mockup B/C</title>
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  :root {
+    --bg:         #f5f3ef;
+    --white:      #ffffff;
+    --surface:    #ffffff;
+    --surface2:   #f9f7f4;
+    --surface3:   #f0ede8;
+    --green:      #005745;
+    --green-mid:  #007a60;
+    --green-light:#e8f2ef;
+    --green-dim:  rgba(0,87,69,0.08);
+    --green-bord: rgba(0,87,69,0.2);
+    --amber:      #b8860b;
+    --amber-light:#fdf6e3;
+    --amber-bord: rgba(184,134,11,0.25);
+    --text:       #1a1a1a;
+    --text-mid:   #444444;
+    --text-muted: #777777;
+    --text-dim:   #aaaaaa;
+    --border:     #e5e1db;
+    --danger:     #c0392b;
+    --danger-bg:  #fdf0ee;
+    --danger-bord:rgba(192,57,43,0.2);
+    --success:    #005745;
+    --success-bg: #e8f2ef;
+    --radius:     8px;
+    --radius-lg:  12px;
+    --shadow:     0 1px 4px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.04);
+    --shadow-lg:  0 2px 8px rgba(0,0,0,0.08), 0 8px 32px rgba(0,0,0,0.06);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    font-weight: 400;
+    min-height: 100vh;
+    padding: 48px 20px 72px;
+  }
+
+  .wrapper { max-width: 680px; margin: 0 auto; }
+
+  /* ── Header ── */
+  .header {
+    text-align: center;
+    margin-bottom: 36px;
+    animation: fadeUp 0.5s ease both;
+  }
+
+  .eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--green-dim);
+    border: 1px solid var(--green-bord);
+    border-radius: 100px;
+    padding: 5px 14px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--green);
+    margin-bottom: 18px;
+  }
+
+  .eyebrow::before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--green);
+  }
+
+  .header h1 {
+    font-family: 'Lora', serif;
+    font-size: clamp(24px, 5vw, 36px);
+    font-weight: 500;
+    line-height: 1.22;
+    color: var(--text);
+    margin-bottom: 12px;
+    letter-spacing: -0.01em;
+  }
+
+  .header h1 em {
+    font-style: italic;
+    color: var(--green);
+  }
+
+  .header p {
+    font-size: 15px;
+    color: var(--text-muted);
+    line-height: 1.65;
+    max-width: 420px;
+    margin: 0 auto;
+  }
+
+  /* ── Progress ── */
+  .progress {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 28px;
+    animation: fadeUp 0.5s ease 0.05s both;
+  }
+
+  .prog-step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .prog-dot {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    border: 2px solid var(--border);
+    background: var(--white);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-dim);
+    transition: all 0.35s ease;
+  }
+
+  .prog-dot.active {
+    border-color: var(--green);
+    background: var(--green);
+    color: #fff;
+    box-shadow: 0 0 0 4px rgba(0,87,69,0.12);
+  }
+
+  .prog-dot.done {
+    border-color: var(--green);
+    background: var(--green-light);
+    color: var(--green);
+  }
+
+  .prog-label {
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.05em;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    transition: color 0.3s;
+    white-space: nowrap;
+  }
+
+  .prog-step.active .prog-label { color: var(--green); }
+  .prog-step.done .prog-label { color: var(--text-muted); }
+
+  .prog-line {
+    width: 56px;
+    height: 2px;
+    background: var(--border);
+    margin: 0 8px 20px;
+    border-radius: 2px;
+    transition: background 0.4s;
+  }
+
+  .prog-line.done { background: var(--green); }
+
+  /* ── Card ── */
+  .card {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+    overflow: hidden;
+    animation: fadeUp 0.5s ease 0.1s both;
+  }
+
+  .card-section {
+    padding: 28px 32px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .card-section:last-child { border-bottom: none; }
+
+  .section-label {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--green);
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .section-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* ── Inputs ── */
+  .input-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+
+  .field { display: flex; flex-direction: column; gap: 6px; }
+  .field.full { grid-column: 1 / -1; }
+
+  .field label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-mid);
+    letter-spacing: 0.02em;
+  }
+
+  .input-wrap { position: relative; }
+
+  .input-prefix {
+    position: absolute;
+    left: 13px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 14px;
+    color: var(--text-muted);
+    pointer-events: none;
+    font-weight: 500;
+  }
+
+  input[type="number"],
+  input[type="text"],
+  input[type="email"],
+  input[type="tel"] {
+    width: 100%;
+    background: var(--surface2);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    font-size: 15px;
+    font-weight: 500;
+    padding: 12px 13px;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+    -moz-appearance: textfield;
+  }
+
+  input[type="number"]::-webkit-inner-spin-button,
+  input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; }
+
+  .has-prefix input { padding-left: 26px; }
+
+  input:focus {
+    border-color: var(--green);
+    background: var(--white);
+    box-shadow: 0 0 0 3px rgba(0,87,69,0.1);
+  }
+
+  input::placeholder { color: var(--text-dim); font-weight: 400; }
+
+  /* ── Slider ── */
+  .slider-wrap { display: flex; flex-direction: column; gap: 10px; }
+
+  .slider-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .slider-header label { font-size: 12px; font-weight: 600; color: var(--text-mid); }
+
+  .slider-val {
+    font-family: 'Lora', serif;
+    font-size: 22px;
+    color: var(--green);
+    font-weight: 500;
+    letter-spacing: -0.01em;
+  }
+
+  .slider-range-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    color: var(--text-dim);
+    font-weight: 400;
+    margin-top: -4px;
+  }
+
+  input[type="range"] {
+    -webkit-appearance: none;
+    width: 100%;
+    height: 4px;
+    background: var(--border);
+    border-radius: 2px;
+    outline: none;
+    cursor: pointer;
+  }
+
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--green);
+    border: 3px solid white;
+    box-shadow: 0 0 0 1.5px var(--green), 0 2px 6px rgba(0,87,69,0.3);
+    transition: transform 0.15s;
+  }
+
+  input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.12); }
+
+  /* ── Button ── */
+  .btn-primary {
+    width: 100%;
+    padding: 15px;
+    background: var(--green);
+    border: none;
+    border-radius: var(--radius);
+    color: #fff;
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
+    margin-top: 22px;
+    box-shadow: 0 2px 8px rgba(0,87,69,0.25);
+  }
+
+  .btn-primary:hover {
+    background: var(--green-mid);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 14px rgba(0,87,69,0.3);
+  }
+
+  .btn-primary:active { transform: translateY(0); }
+
+  /* ── Results ── */
+  #results-section { display: none; }
+
+  .summary-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+
+  .sum-card {
+    background: var(--surface2);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px 14px;
+    text-align: center;
+  }
+
+  .sum-card.accent {
+    background: var(--green-light);
+    border-color: var(--green-bord);
+  }
+
+  .sum-label {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+  }
+
+  .sum-value {
+    font-family: 'Lora', serif;
+    font-size: 22px;
+    font-weight: 500;
+    color: var(--text);
+    line-height: 1;
+    letter-spacing: -0.01em;
+  }
+
+  .sum-card.accent .sum-value { color: var(--green); }
+  .sum-sub { font-size: 11px; color: var(--text-dim); margin-top: 5px; }
+
+  /* ── Urgency ── */
+  .urgency-block {
+    background: var(--amber-light);
+    border: 1.5px solid var(--amber-bord);
+    border-radius: var(--radius);
+    padding: 16px 18px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .urgency-num {
+    font-family: 'Lora', serif;
+    font-size: 48px;
+    font-weight: 500;
+    color: var(--amber);
+    line-height: 1;
+    flex-shrink: 0;
+    min-width: 56px;
+    text-align: center;
+    letter-spacing: -0.02em;
+  }
+
+  .urgency-text { font-size: 13px; color: var(--text-mid); line-height: 1.6; }
+  .urgency-text strong { color: var(--text); font-weight: 600; }
+
+  /* ── Coverage bar ── */
+  .coverage-wrap { margin-bottom: 20px; }
+
+  .cov-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+    font-weight: 500;
+  }
+
+  .cov-pct {
+    font-family: 'Lora', serif;
+    font-size: 16px;
+    color: var(--green);
+    font-weight: 500;
+  }
+
+  .cov-track {
+    height: 8px;
+    background: var(--surface3);
+    border-radius: 4px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+  }
+
+  .cov-fill {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 1.1s cubic-bezier(0.16,1,0.3,1);
+    background: linear-gradient(90deg, var(--green) 0%, #4caf50 60%, #ff9800 85%, #e53935 100%);
+  }
+
+  /* ── FRS Badge ── */
+  .frs-badge {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 14px 16px;
+    border-radius: var(--radius);
+    background: var(--surface2);
+    border: 1.5px solid var(--border);
+  }
+
+  .badge-icon { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+  .badge-text { font-size: 13px; color: var(--text-muted); line-height: 1.6; }
+  .badge-text strong { color: var(--text); font-weight: 600; }
+
+  .frs-badge.on-track { background: var(--success-bg); border-color: rgba(0,87,69,0.2); }
+  .frs-badge.on-track .badge-text { color: #2d5a3d; }
+  .frs-badge.close { background: var(--amber-light); border-color: var(--amber-bord); }
+  .frs-badge.close .badge-text { color: #6b4c0a; }
+  .frs-badge.off-track { background: var(--danger-bg); border-color: var(--danger-bord); }
+  .frs-badge.off-track .badge-text { color: #7a2020; }
+
+  /* ── Gate ── */
+  #gate-section { display: none; }
+
+  .gate {
+    background: linear-gradient(160deg, var(--green-light) 0%, #f0f7f5 100%);
+    border-top: 3px solid var(--green);
+    padding: 32px;
+  }
+
+  .gate-header { display: flex; align-items: flex-start; gap: 16px; margin-bottom: 22px; }
+
+  .gate-check {
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    background: var(--green);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    flex-shrink: 0;
+    box-shadow: 0 2px 8px rgba(0,87,69,0.3);
+  }
+
+  .gate-header-text h3 {
+    font-family: 'Lora', serif;
+    font-size: 20px;
+    font-weight: 500;
+    color: var(--text);
+    margin-bottom: 5px;
+  }
+
+  .gate-header-text p { font-size: 13px; color: var(--text-muted); line-height: 1.6; }
+
+  .gate-perks {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 24px;
+  }
+
+  .gate-perk {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    font-size: 12px;
+    color: var(--text-mid);
+    line-height: 1.5;
+    padding: 10px 12px;
+    background: rgba(255,255,255,0.7);
+    border-radius: var(--radius);
+    border: 1px solid rgba(0,87,69,0.12);
+    font-weight: 500;
+  }
+
+  .gate-perk::before {
+    content: '✓';
+    color: var(--green);
+    font-size: 12px;
+    font-weight: 700;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  .gate-form { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .gate-form .field.full { grid-column: 1 / -1; }
+
+  .btn-unlock {
+    grid-column: 1/-1;
+    padding: 15px;
+    background: var(--green);
+    border: none;
+    border-radius: var(--radius);
+    color: #fff;
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 2px 10px rgba(0,87,69,0.3);
+  }
+
+  .btn-unlock:hover { background: var(--green-mid); transform: translateY(-1px); box-shadow: 0 4px 16px rgba(0,87,69,0.35); }
+
+  .wa-note {
+    grid-column: 1/-1;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    color: var(--text-muted);
+    font-weight: 500;
+  }
+
+  .wa-icon {
+    width: 22px;
+    height: 22px;
+    background: #25d366;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    flex-shrink: 0;
+  }
+
+  /* ── Full Breakdown ── */
+  #full-breakdown { display: none; }
+
+  .invest-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+
+  .inv-card {
+    background: var(--surface2);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px 12px;
+    text-align: center;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+
+  .inv-card:hover { border-color: var(--green-bord); box-shadow: 0 2px 8px rgba(0,87,69,0.08); }
+  .inv-card.best { background: var(--green-light); border-color: var(--green-bord); }
+
+  .inv-rate { font-size: 11px; font-weight: 700; letter-spacing: 0.05em; color: var(--text-muted); margin-bottom: 6px; }
+  .inv-card.best .inv-rate { color: var(--green); }
+
+  .inv-amount {
+    font-family: 'Lora', serif;
+    font-size: 20px;
+    font-weight: 500;
+    color: var(--text);
+    line-height: 1;
+    letter-spacing: -0.01em;
+  }
+
+  .inv-card.best .inv-amount { color: var(--green); }
+  .inv-label { font-size: 10px; color: var(--text-dim); margin-top: 4px; font-weight: 500; }
+
+  /* ── Mid CTA ── */
+  .mid-cta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 20px 24px;
+    background: var(--green);
+    border-radius: var(--radius);
+  }
+
+  .mid-cta p { font-size: 13px; color: rgba(255,255,255,0.85); line-height: 1.55; }
+  .mid-cta p strong { color: #fff; font-weight: 600; }
+
+  .btn-mid {
+    padding: 11px 20px;
+    background: #fff;
+    border: none;
+    border-radius: var(--radius);
+    color: var(--green);
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    cursor: pointer;
+    white-space: nowrap;
+    text-decoration: none;
+    transition: all 0.2s;
+    flex-shrink: 0;
+    display: inline-block;
+  }
+
+  .btn-mid:hover { background: var(--green-light); }
+
+  /* ── Chart ── */
+  .chart-wrap { position: relative; height: 180px; margin-bottom: 10px; }
+  .chart-note { font-size: 12px; text-align: center; margin-top: 6px; font-weight: 500; }
+
+  /* ── CTA Bottom ── */
+  .cta-bottom {
+    padding: 36px 32px;
+    text-align: center;
+    background: var(--green);
+  }
+
+  .cta-bottom h3 {
+    font-family: 'Lora', serif;
+    font-size: 24px;
+    font-weight: 500;
+    color: #fff;
+    margin-bottom: 8px;
+    letter-spacing: -0.01em;
+  }
+
+  .cta-bottom p { font-size: 13px; color: rgba(255,255,255,0.75); margin-bottom: 22px; line-height: 1.65; max-width: 400px; margin-left: auto; margin-right: auto; }
+
+  .btn-cta {
+    display: inline-block;
+    padding: 14px 32px;
+    background: #fff;
+    border: none;
+    border-radius: var(--radius);
+    color: var(--green);
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.2s;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.15);
+  }
+
+  .btn-cta:hover { background: var(--green-light); transform: translateY(-1px); }
+
+  /* ── Disclaimer ── */
+  .disclaimer {
+    font-size: 11px;
+    color: var(--text-dim);
+    text-align: center;
+    margin-top: 20px;
+    line-height: 1.65;
+    animation: fadeUp 0.5s ease 0.2s both;
+    max-width: 560px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  /* ── Animation ── */
+  @keyframes fadeUp { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
+  .fade-in { animation: fadeUp 0.4s ease both; }
+
+  /* ── Mobile ── */
+  @media (max-width: 560px) {
+    body { padding: 24px 14px 48px; }
+    .header { margin-bottom: 24px; }
+    .header h1 { font-size: 24px; }
+    .card-section { padding: 22px 18px; }
+    .input-grid { grid-template-columns: 1fr; gap: 14px; }
+    .summary-row { grid-template-columns: 1fr; gap: 8px; }
+    .invest-grid { grid-template-columns: 1fr 1fr; gap: 8px; }
+    .gate { padding: 24px 18px; }
+    .gate-perks { grid-template-columns: 1fr; }
+    .gate-form { grid-template-columns: 1fr; }
+    .gate-form .field.full { grid-column: 1; }
+    .btn-unlock { grid-column: 1; }
+    .wa-note { grid-column: 1; }
+    .mid-cta { flex-direction: column; text-align: center; gap: 12px; }
+    .urgency-block { gap: 12px; }
+    .urgency-num { font-size: 40px; min-width: 48px; }
+    .prog-line { width: 36px; }
+    input[type="number"], input[type="text"], input[type="email"], input[type="tel"] { font-size: 16px; }
+    .cta-bottom { padding: 28px 18px; }
+    .cta-bottom h3 { font-size: 20px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrapper">
+
+  <!-- Header -->
+  <div class="header">
+    <div class="eyebrow">Retirement Blueprint</div>
+    <h1>How Much Do You <em>Actually Need</em><br>to Retire Comfortably?</h1>
+    <p>Find out your CPF Life payout, your retirement gap, and exactly how much you need to invest — in under 60 seconds.</p>
+  </div>
+
+  <!-- Progress -->
+  <div class="progress">
+    <div class="prog-step active" id="ps1">
+      <div class="prog-dot active" id="pd1">1</div>
+      <div class="prog-label">Your Profile</div>
+    </div>
+    <div class="prog-line" id="pl1"></div>
+    <div class="prog-step" id="ps2">
+      <div class="prog-dot" id="pd2">2</div>
+      <div class="prog-label">Your Gap</div>
+    </div>
+    <div class="prog-line" id="pl2"></div>
+    <div class="prog-step" id="ps3">
+      <div class="prog-dot" id="pd3">3</div>
+      <div class="prog-label">Your Blueprint</div>
+    </div>
+  </div>
+
+  <div class="card">
+
+    <!-- STEP 1 -->
+    <div class="card-section" id="input-section">
+      <div class="section-label">Your Profile</div>
+      <div class="input-grid">
+
+        <div class="field">
+          <label>Current Age</label>
+          <input type="number" id="currentAge" value="45" min="30" max="70" placeholder="e.g. 45">
+        </div>
+
+        <div class="field">
+          <label>Desired Retirement Age</label>
+          <input type="number" id="retireAge" value="65" min="50" max="75" placeholder="e.g. 65">
+        </div>
+
+        <div class="field">
+          <label>CPF Ordinary Account (S$)</label>
+          <div class="input-wrap has-prefix">
+            <span class="input-prefix">$</span>
+            <input type="text" id="oa" value="120,000" placeholder="e.g. 120,000" inputmode="numeric">
+          </div>
+        </div>
+
+        <div class="field">
+          <label>CPF Special Account (S$)</label>
+          <div class="input-wrap has-prefix">
+            <span class="input-prefix">$</span>
+            <input type="text" id="sa" value="60,000" placeholder="e.g. 60,000" inputmode="numeric">
+          </div>
+        </div>
+
+        <div class="field full" style="margin-top:-4px;">
+          <div style="display:flex; align-items:center; gap:6px; font-size:12px; color:var(--text-muted); padding:9px 12px; background:var(--surface2); border-radius:var(--radius); border:1px solid var(--border);">
+            <span style="font-size:14px;">💡</span>
+            <span>Not sure of your balances? <a href="https://www.cpf.gov.sg/member/ds" target="_blank" rel="noopener" style="color:var(--green); font-weight:600; text-decoration:none; border-bottom:1px solid rgba(0,87,69,0.3);">Check on the CPF website →</a></span>
+          </div>
+        </div>
+
+        <div class="field full">
+          <label>Gross Monthly Salary (S$)</label>
+          <div class="input-wrap has-prefix">
+            <span class="input-prefix">$</span>
+            <input type="text" id="salary" value="8,000" placeholder="e.g. 8,000" inputmode="numeric">
+          </div>
+        </div>
+
+        <div class="field full">
+          <div class="slider-wrap">
+            <div class="slider-header">
+              <label>Desired Monthly Income at Retirement</label>
+              <span class="slider-val" id="incomeVal">$6,000</span>
+            </div>
+            <input type="range" id="income" min="3000" max="15000" step="100" value="6000">
+            <div class="slider-range-labels">
+              <span>$3,000 / month</span>
+              <span>$15,000 / month</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+      <button class="btn-primary" onclick="calculate()">Calculate My Retirement Gap →</button>
+    </div>
+
+    <!-- STEP 2: RESULTS -->
+    <div class="card-section fade-in" id="results-section">
+      <div class="section-label">Your Retirement Snapshot</div>
+      <div class="summary-row" id="summary-row"></div>
+      <div class="urgency-block" id="urgency-block"></div>
+      <div class="coverage-wrap">
+        <div class="cov-header">
+          <span>CPF Life covers your desired retirement income</span>
+          <span class="cov-pct" id="cov-pct-val">0%</span>
+        </div>
+        <div class="cov-track">
+          <div class="cov-fill" id="cov-fill" style="width:0%"></div>
+        </div>
+      </div>
+      <div class="frs-badge" id="frs-badge"></div>
+    </div>
+
+    <!-- GATE -->
+    <div id="gate-section">
+      <div class="gate fade-in">
+        <div class="gate-header">
+          <div class="gate-check">📋</div>
+          <div class="gate-header-text">
+            <h3>Your Blueprint Is Ready</h3>
+            <p>Enter your details and Arron will WhatsApp you your personalised retirement breakdown — including monthly investment amounts, a portfolio chart, and your CPF strategy.</p>
+          </div>
+        </div>
+
+        <div class="gate-perks">
+          <div class="gate-perk">Monthly investment needed at 4%, 6%, 8% & 10% returns</div>
+          <div class="gate-perk">Portfolio chart — will your money last to age 84?</div>
+          <div class="gate-perk">Your CPF FRS status & SA top-up strategy</div>
+          <div class="gate-perk">Personalised next step recommendation from Arron</div>
+        </div>
+
+        <div class="gate-form">
+          <div class="field">
+            <label>Your Name</label>
+            <input type="text" id="gName" placeholder="e.g. David Tan">
+          </div>
+          <div class="field">
+            <label>WhatsApp Number</label>
+            <input type="tel" id="gPhone" value="+65 " placeholder="+65 9XXX XXXX">
+          </div>
+          <div class="field full">
+            <label>Email Address</label>
+            <input type="email" id="gEmail" placeholder="your@email.com">
+          </div>
+          <div class="wa-note">
+            <div class="wa-icon">💬</div>
+            Arron will WhatsApp your full blueprint within 1 business day
+          </div>
+          <button class="btn-unlock" onclick="unlockBreakdown()">Send Me My Blueprint →</button>
+          <div style="grid-column:1/-1; font-size:11px; color:var(--text-dim); text-align:center;">
+            Your information is private and never shared with third parties.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 3: FULL BREAKDOWN -->
+    <div id="full-breakdown">
+
+      <div class="card-section fade-in">
+        <div class="section-label">How Much to Invest Monthly</div>
+        <div class="invest-grid" id="invest-grid"></div>
+        <div class="frs-badge" id="invest-note"></div>
+      </div>
+
+      <div class="card-section fade-in">
+        <div class="mid-cta">
+          <p><strong>Want Arron to map this to your actual assets?</strong><br>CPF, SRS, and cash — coordinated into one retirement income plan.</p>
+          <a href="https://retirementblueprint.sg" class="btn-mid" target="_blank">Book Free Consultation</a>
+        </div>
+      </div>
+
+      <div class="card-section fade-in">
+        <div class="section-label">Your Retirement Income Breakdown</div>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; padding:12px 16px; background:var(--surface2); border-radius:var(--radius); border:1.5px solid var(--border);">
+          <div style="font-size:12px; font-weight:600; color:var(--text-muted);">YOUR INCOME TARGET</div>
+          <div id="income-target-label" style="font-family:'Lora',serif; font-size:22px; font-weight:500; color:var(--green);">—</div>
+          <div style="font-size:11px; color:var(--text-dim); text-align:right;">/ month in<br>today's dollars</div>
+        </div>
+        <div class="chart-wrap">
+          <canvas id="incomeChart"></canvas>
+        </div>
+        <p class="chart-note" id="chart-note"></p>
+      </div>
+
+      <div class="cta-bottom">
+        <h3>Ready to Close Your Retirement Gap?</h3>
+        <p>Arron will design a coordinated investment system using your CPF, SRS, and cash assets — so every dollar works toward the same income goal.</p>
+        <a href="https://retirementblueprint.sg" class="btn-cta" target="_blank">Book Your Free 30-Min Consultation →</a>
+      </div>
+
+    </div>
+  </div>
+
+  <p class="disclaimer">For illustrative purposes only. Not financial advice. Assumptions: 2% inflation p.a., CPF OA grows at 2.5% p.a. and SA at 4% p.a. to age 55 inclusive of ongoing CPF contributions based on CPF Board 2025 rates (OW ceiling $7,400/month), nest egg calculated at 6% p.a. dividend yield with capital preserved, CPF Life payout based on prevailing FRS of S$220,400 (2025), life expectancy projected to age 84. Arron Oh is a Financial Adviser Representative of IPP Financial Advisers Pte Ltd. This advertisement has not been reviewed by the Monetary Authority of Singapore.</p>
+
+</div>
+
+<script>
+  document.getElementById('income').addEventListener('input', function() {
+    document.getElementById('incomeVal').textContent = '$' + parseInt(this.value).toLocaleString();
+  });
+
+  function formatCommaInput(id) {
+    document.getElementById(id).addEventListener('input', function() {
+      const raw = this.value.replace(/,/g,'').replace(/[^0-9]/g,'');
+      this.value = raw === '' ? '' : parseInt(raw).toLocaleString('en-SG');
+    });
+  }
+  formatCommaInput('oa');
+  formatCommaInput('sa');
+  formatCommaInput('salary');
+
+  function parseComma(id) { return parseFloat(document.getElementById(id).value.replace(/,/g,'')) || 0; }
+  function fmt(n) { return '$' + Math.round(Math.max(0,n)).toLocaleString('en-SG'); }
+
+  let R = {};
+  let drawdownChart = null;
+
+  function setStep(n) {
+    [1,2,3].forEach(i => {
+      const dot = document.getElementById('pd'+i);
+      const step = document.getElementById('ps'+i);
+      dot.classList.remove('active','done');
+      step.classList.remove('active','done');
+      if (i < n)      { dot.classList.add('done');  step.classList.add('done');  dot.textContent = '✓'; }
+      else if (i===n) { dot.classList.add('active'); step.classList.add('active'); }
+    });
+    [1,2].forEach(i => document.getElementById('pl'+i).classList.toggle('done', i < n));
+  }
+
+  function calculate() {
+    const currentAge = parseInt(document.getElementById('currentAge').value) || 45;
+    const retireAge  = parseInt(document.getElementById('retireAge').value)  || 65;
+    const oa         = parseComma('oa');
+    const sa         = parseComma('sa');
+    const income     = parseFloat(document.getElementById('income').value);
+    const lifeExp    = 84;
+
+    if (retireAge <= currentAge) { alert('Retirement age must be greater than your current age.'); return; }
+
+    const inflation  = 0.02;
+    const postReturn = 0.02;
+    const yearsToRetire = retireAge - currentAge;
+
+    const FRS_BASE       = 220400;
+    const FRS_at55       = (55 - Math.min(currentAge, 55)) * 6000 + FRS_BASE;
+    const cpfLifeMonthly = (1780 / 220400) * FRS_at55;
+
+    const salary = parseComma('salary');
+
+    // CPF contribution rates by age (employee + employer, % of salary)
+    // Source: CPF Board 2025 rates, capped at OW ceiling $7,400/month
+    function getCpfRates(age) {
+      if (age <= 35)  return { total: 0.37, oa: 0.6216, sa: 0.1621, ma: 0.2163 }; // 23% EE + 14% ER... split OA/SA per CPF allocation
+      if (age <= 45)  return { total: 0.37, oa: 0.5676, sa: 0.1892, ma: 0.2432 };
+      if (age <= 50)  return { total: 0.37, oa: 0.5135, sa: 0.2162, ma: 0.2703 };
+      if (age <= 55)  return { total: 0.37, oa: 0.4054, sa: 0.3108, ma: 0.2838 };
+      if (age <= 60)  return { total: 0.26, oa: 0.3846, sa: 0.2692, ma: 0.3462 };
+      if (age <= 65)  return { total: 0.165, oa: 0.2424, sa: 0.3636, ma: 0.3939 };
+      return           { total: 0.125, oa: 0.08,   sa: 0.08,   ma: 0.84   };
+    }
+
+    const OW_CEILING = 7400; // monthly ordinary wage ceiling
+    const cappedSalary = Math.min(salary, OW_CEILING);
+
+    // Simulate year by year OA and SA growth with contributions to age 55
+    let simOA = oa;
+    let simSA = sa;
+    const yearsTo55 = Math.max(0, 55 - currentAge);
+
+    for (let y = 0; y < yearsTo55; y++) {
+      const age = currentAge + y;
+      const rates = getCpfRates(age);
+      const annualContrib = cappedSalary * rates.total * 12;
+      const oaContrib = annualContrib * rates.oa;
+      const saContrib = annualContrib * rates.sa;
+      // Apply contributions then interest
+      simOA = (simOA + oaContrib) * 1.025;
+      simSA = (simSA + saContrib) * 1.04;
+    }
+
+    const cpfTotal55  = simOA + simSA;
+    const cpfExcess55 = cpfTotal55 - FRS_at55;
+    const frsProjectedPct = Math.min(150, (cpfTotal55 / FRS_at55) * 100);
+
+    const yearsFrom55 = Math.max(0, retireAge - 55);
+    const cpfExcessAtRetire = cpfExcess55 * Math.pow(1.025, yearsFrom55);
+
+    const incomeAtRetire  = income * Math.pow(1 + inflation, yearsToRetire);
+    // Nest egg based on 6% p.a. dividend yield — capital preserved, income sustained for life
+    const dividendYield   = 0.06;
+    const monthlyGap      = Math.max(0, income - cpfLifeMonthly); // today's dollars
+    const nestEgg         = (monthlyGap * 12) / dividendYield;    // capital needed to generate gap at 6%
+    const totalNeeded     = Math.max(0, nestEgg - Math.max(0, cpfExcessAtRetire));
+    const coveragePct     = Math.min(100, Math.max(0, (cpfLifeMonthly / income) * 100));
+    const monthlyFromNestEgg = nestEgg * dividendYield / 12;       // income generated from nest egg
+
+    const pmtRates   = [0.04, 0.06, 0.08, 0.10];
+    const pmtResults = pmtRates.map(r => {
+      const mr2 = r / 12, n = yearsToRetire * 12;
+      return totalNeeded <= 0 ? 0 : (mr2 === 0 ? totalNeeded/n : totalNeeded * mr2 / (Math.pow(1+mr2,n)-1));
+    });
+
+    R = { currentAge, retireAge, income, salary, lifeExp, yearsToRetire,
+          cpfLifeMonthly, FRS_at55, cpfTotal55, frsProjectedPct,
+          cpfExcess55, nestEgg, totalNeeded, coveragePct, pmtResults,
+          monthlyFromNestEgg, monthlyGap, dividendYield, incomeAtRetire };
+
+    renderSummary();
+    setStep(2);
+    document.getElementById('results-section').style.display = 'block';
+    document.getElementById('gate-section').style.display = 'block';
+    setTimeout(() => document.getElementById('results-section').scrollIntoView({ behavior:'smooth', block:'start' }), 80);
+  }
+
+  function renderSummary() {
+    document.getElementById('summary-row').innerHTML = `
+      <div class="sum-card">
+        <div class="sum-label">Est. CPF Life Payout</div>
+        <div class="sum-value">${fmt(R.cpfLifeMonthly)}</div>
+        <div class="sum-sub">/ month from age 65</div>
+      </div>
+      <div class="sum-card">
+        <div class="sum-label">Additional Income Needed</div>
+        <div class="sum-value">${fmt(Math.max(0, R.income - R.cpfLifeMonthly))}</div>
+        <div class="sum-sub">/ month beyond CPF Life</div>
+      </div>
+      <div class="sum-card accent">
+        <div class="sum-label">Nest Egg Required</div>
+        <div class="sum-value">${fmt(R.nestEgg)}</div>
+        <div class="sum-sub">total by age ${R.retireAge}</div>
+      </div>
+    `;
+
+    document.getElementById('urgency-block').innerHTML = `
+      <div class="urgency-num">${R.yearsToRetire}</div>
+      <div class="urgency-text">
+        <strong>years left to build ${fmt(R.nestEgg)}.</strong><br>
+        At a 6% p.a. dividend yield, this nest egg generates ${fmt(R.monthlyFromNestEgg)}/month in passive income — for life, with capital preserved. Every year of delay means higher monthly contributions needed.
+      </div>
+    `;
+
+    document.getElementById('cov-pct-val').textContent = Math.round(R.coveragePct) + '%';
+    setTimeout(() => { document.getElementById('cov-fill').style.width = Math.max(4, R.coveragePct) + '%'; }, 120);
+
+    const badge = document.getElementById('frs-badge');
+    let cls, icon, msg;
+    if (R.frsProjectedPct >= 100) {
+      cls = 'on-track'; icon = '✅';
+      msg = `You are on track to meet or exceed the <strong>Full Retirement Sum (FRS) of ${fmt(R.FRS_at55)}</strong> by age 55. Any CPF balance above the FRS can be withdrawn or reinvested — Arron can show you how to deploy this strategically.`;
+    } else if (R.frsProjectedPct >= 70) {
+      cls = 'close'; icon = '⚠️';
+      msg = `You are projected to reach <strong>${Math.round(R.frsProjectedPct)}% of the FRS (${fmt(R.FRS_at55)})</strong> by age 55. Topping up your SA before 55 earns 4% p.a. guaranteed and reduces taxable income — a high-leverage move worth exploring.`;
+    } else {
+      cls = 'off-track'; icon = '⚡';
+      msg = `Based on current balances, you are projected to reach <strong>${Math.round(R.frsProjectedPct)}% of the FRS (${fmt(R.FRS_at55)})</strong> by age 55. Topping up your SA now is one of the highest-return, lowest-risk steps available — Arron can map this out for you.`;
+    }
+    badge.className = 'frs-badge ' + cls;
+    badge.innerHTML = `<div class="badge-icon">${icon}</div><div class="badge-text">${msg}</div>`;
+  }
+
+  function unlockBreakdown() {
+    const name  = document.getElementById('gName').value.trim();
+    const phone = document.getElementById('gPhone').value.trim();
+    const email = document.getElementById('gEmail').value.trim();
+    if (!name || !phone || !email) { alert('Please fill in all fields so we can send your blueprint.'); return; }
+    if (!/\S+@\S+\.\S+/.test(email)) { alert('Please enter a valid email address.'); return; }
+    console.log('Lead:', { name, phone, email, results: R });
+    document.getElementById('gate-section').style.display = 'none';
+    renderFullBreakdown();
+    setStep(3);
+    setTimeout(() => document.getElementById('full-breakdown').scrollIntoView({ behavior:'smooth', block:'start' }), 80);
+  }
+
+  function renderFullBreakdown() {
+    document.getElementById('full-breakdown').style.display = 'block';
+    document.getElementById('income-target-label').textContent = fmt(R.income) + '/month';
+    const rates  = ['4%','6%','8%','10%'];
+    const labels = ['Conservative','Moderate','Growth','Aggressive'];
+    document.getElementById('invest-grid').innerHTML = R.pmtResults.map((pmt, i) => `
+      <div class="inv-card ${i===2?'best':''}">
+        <div class="inv-rate">${rates[i]} p.a.</div>
+        <div class="inv-amount">${fmt(pmt)}</div>
+        <div class="inv-label">${labels[i]} / month</div>
+      </div>
+    `).join('');
+
+    const n = document.getElementById('invest-note');
+    n.className = 'frs-badge';
+    n.innerHTML = `<div class="badge-icon">💡</div><div class="badge-text">These figures assume consistent monthly investing from today until age ${R.retireAge}. If you already have existing investments or CPF excess above FRS, your actual required amount will be lower — Arron will factor all of this in during your consultation.</div>`;
+
+    renderChart();
+  }
+
+  function renderChart() {
+    const cpf        = Math.round(R.cpfLifeMonthly);
+    const investment = Math.round(R.monthlyFromNestEgg);
+    const target     = Math.round(R.income);
+    const total      = cpf + investment;
+    const gap        = Math.max(0, target - total);
+
+    const note = document.getElementById('chart-note');
+    if (gap === 0) {
+      note.textContent = '✓ Your projected income streams fully cover your retirement goal of ' + fmt(target) + '/month — with capital preserved for life.';
+      note.style.color = 'var(--success)';
+    } else {
+      note.textContent = 'There is a remaining gap of ' + fmt(gap) + '/month. Arron can identify additional income streams to close this during your consultation.';
+      note.style.color = 'var(--danger)';
+    }
+
+    if (drawdownChart) drawdownChart.destroy();
+    const ctx = document.getElementById('incomeChart').getContext('2d');
+
+    drawdownChart = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: ['Your Monthly Retirement Income'],
+        datasets: [
+          {
+            label: 'CPF Life',
+            data: [cpf],
+            backgroundColor: '#005745',
+            borderRadius: { topLeft: 0, topRight: 0, bottomLeft: 6, bottomRight: 6 },
+            borderSkipped: false,
+          },
+          {
+            label: 'Investment Income (6% yield)',
+            data: [investment],
+            backgroundColor: '#4caf8a',
+            borderRadius: { topLeft: 0, topRight: 0, bottomLeft: 0, bottomRight: 0 },
+            borderSkipped: false,
+          },
+          {
+            label: 'Remaining Gap',
+            data: [gap],
+            backgroundColor: 'rgba(192,57,43,0.15)',
+            borderRadius: { topLeft: 6, topRight: 6, bottomLeft: 0, bottomRight: 0 },
+            borderSkipped: false,
+            borderWidth: { top: 2, left: 0, right: 0, bottom: 0 },
+            borderColor: 'rgba(192,57,43,0.4)',
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        indexAxis: 'y',
+        plugins: {
+          legend: {
+            display: true,
+            position: 'bottom',
+            labels: {
+              color: '#777',
+              font: { size: 12 },
+              boxWidth: 14,
+              boxHeight: 14,
+              padding: 16,
+              usePointStyle: true,
+              pointStyle: 'rectRounded',
+            }
+          },
+          tooltip: {
+            backgroundColor: '#fff',
+            borderColor: 'rgba(0,87,69,0.2)',
+            borderWidth: 1,
+            titleColor: '#005745',
+            bodyColor: '#555',
+            padding: 12,
+            callbacks: {
+              label: c => '  ' + c.dataset.label + ': $' + c.parsed.x.toLocaleString('en-SG') + '/month'
+            }
+          },
+          annotation: {}
+        },
+        scales: {
+          x: {
+            stacked: true,
+            grid: { color: 'rgba(0,0,0,0.04)' },
+            ticks: {
+              color: '#aaa',
+              font: { size: 11 },
+              callback: v => '$' + v.toLocaleString('en-SG')
+            },
+            border: { color: 'rgba(0,0,0,0.06)' },
+            max: Math.max(target * 1.1, total * 1.1)
+          },
+          y: {
+            stacked: true,
+            grid: { display: false },
+            ticks: { display: false },
+            border: { display: false }
+          }
+        }
+      }
+    });
+  }
+</script>
+</body>
+</html>
